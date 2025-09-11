@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Focus & Mindfulness Theme - Calming Blues & Greens */
+    --background: 220 18% 97%;
+    --foreground: 215 25% 15%;
+
+    --card: 220 15% 99%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 220 15% 99%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Primary: Calming blue for focus */
+    --primary: 215 84% 45%;
+    --primary-foreground: 220 15% 99%;
+
+    /* Secondary: Soft slate for UI elements */
+    --secondary: 215 16% 92%;
+    --secondary-foreground: 215 25% 25%;
+
+    --muted: 215 12% 94%;
+    --muted-foreground: 215 15% 55%;
+
+    /* Accent: Mindful green for positive actions */
+    --accent: 142 71% 45%;
+    --accent-foreground: 220 15% 99%;
+
+    /* Warning: Amber for time warnings */
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 15% 15%;
+
+    /* Destructive: Red for blocked state */
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 220 15% 99%;
+
+    --border: 215 12% 88%;
+    --input: 215 12% 94%;
+    --ring: 215 84% 45%;
+
+    /* Timer specific colors */
+    --timer-active: 142 71% 45%;
+    --timer-warning: 38 92% 50%;
+    --timer-critical: 0 84% 55%;
+    --timer-expired: 215 25% 25%;
+
+    /* Gradients for visual appeal */
+    --gradient-focus: linear-gradient(135deg, hsl(215 84% 45%), hsl(142 71% 45%));
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%), hsl(0 84% 55%));
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark mode: Deep focus theme */
+    --background: 215 28% 8%;
+    --foreground: 220 15% 95%;
+
+    --card: 215 25% 12%;
+    --card-foreground: 220 15% 95%;
+
+    --popover: 215 25% 12%;
+    --popover-foreground: 220 15% 95%;
+
+    --primary: 215 84% 55%;
+    --primary-foreground: 215 28% 8%;
+
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 220 15% 85%;
+
+    --muted: 215 18% 15%;
+    --muted-foreground: 215 12% 65%;
+
+    --accent: 142 71% 50%;
+    --accent-foreground: 215 28% 8%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 215 28% 8%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 15% 95%;
+
+    --border: 215 18% 22%;
+    --input: 215 18% 18%;
+    --ring: 215 84% 55%;
+
+    /* Timer colors for dark mode */
+    --timer-active: 142 71% 50%;
+    --timer-warning: 38 92% 55%;
+    --timer-critical: 0 84% 60%;
+    --timer-expired: 220 15% 75%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
