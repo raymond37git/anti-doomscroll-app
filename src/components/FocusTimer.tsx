@@ -111,60 +111,58 @@ export function FocusTimer({
   };
 
   return (
-    <Card className="p-6 bg-card border-border shadow-lg">
-      <div className="text-center space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">{getTimerTitle()}</h2>
-        {getTimerMessage() && (
-          <p className="text-sm text-accent font-medium">{getTimerMessage()}</p>
+    <div className="text-center space-y-6">
+      <h2 className="text-lg font-thin tracking-wider text-gray-400 uppercase">{getTimerTitle()}</h2>
+      {getTimerMessage() && (
+        <p className="text-sm text-gray-500 font-light">{getTimerMessage()}</p>
+      )}
+      
+      <div className={cn(
+        "text-8xl font-mono font-thin tracking-wider transition-colors duration-300",
+        timeLeft === 0 ? 'text-gray-500' : 'text-white',
+        getTimerAnimation()
+      )}>
+        {formatTime(timeLeft)}
+      </div>
+
+      <div className="flex gap-4 justify-center">
+        {timerMode === 'focus' && (
+          <>
+            {!isRunning ? (
+              <Button 
+                onClick={startTimer} 
+                disabled={timeLeft === 0}
+                className="bg-white text-black hover:bg-gray-200 font-thin tracking-wider uppercase px-8 py-3"
+              >
+                {timeLeft === 0 ? 'Time Expired' : 'Start Focus'}
+              </Button>
+            ) : (
+              <Button 
+                onClick={pauseTimer}
+                className="border border-gray-600 text-gray-400 hover:border-white hover:text-white font-thin tracking-wider uppercase px-8 py-3"
+              >
+                Pause
+              </Button>
+            )}
+          </>
         )}
         
-        <div className={cn(
-          "text-6xl font-mono font-bold transition-colors duration-300",
-          getTimerColor(),
-          getTimerAnimation()
-        )}>
-          {formatTime(timeLeft)}
-        </div>
-
-        <div className="flex gap-2 justify-center">
-          {timerMode === 'focus' && (
-            <>
-              {!isRunning ? (
-                <Button 
-                  onClick={startTimer} 
-                  disabled={timeLeft === 0}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  {timeLeft === 0 ? 'Time Expired' : 'Start Focus'}
-                </Button>
-              ) : (
-                <Button 
-                  onClick={pauseTimer}
-                  variant="secondary"
-                >
-                  Pause
-                </Button>
-              )}
-            </>
-          )}
-          
-          {timerMode === 'cooldown' && (
-            <div className="bg-accent/10 border border-accent/20 rounded-lg p-3">
-              <p className="text-accent font-medium">
-                🧘‍♀️ Cooldown in progress...
-              </p>
-            </div>
-          )}
-        </div>
-
-        {timerMode === 'focus' && timeLeft === 0 && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-            <p className="text-destructive font-medium">
-              ⏰ Focus time complete! Starting cooldown...
+        {timerMode === 'cooldown' && (
+          <div className="border border-gray-700 bg-gray-800 p-4">
+            <p className="text-gray-400 font-light tracking-wider uppercase">
+              Cooldown in progress...
             </p>
           </div>
         )}
       </div>
-    </Card>
+
+      {timerMode === 'focus' && timeLeft === 0 && (
+        <div className="border border-gray-700 bg-gray-800 p-4">
+          <p className="text-gray-400 font-light tracking-wider uppercase">
+            Focus time complete! Starting cooldown...
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Doomscroll Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #000000;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            opacity: 0.7;
+            font-size: 1rem;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #111111;
+        }
+
+        .section h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .site-config {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .site-config:hover {
+            border-color: #555;
+            background: #151515;
+        }
+
+        .site-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .site-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: #333;
+        }
+
+        .site-name {
+            font-weight: 500;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .site-status {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .site-status.blocked {
+            color: #ff4444;
+        }
+
+        .site-status.allowed {
+            color: #44ff44;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #ffffff;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #000000;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(26px);
+            background: #000000;
+        }
+
+        .countdown-display {
+            width: 120px;
+            padding: 8px 12px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        .btn:hover {
+            background: #1a1a1a;
+            border-color: #555;
+        }
+
+        .btn-primary {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #cccccc;
+        }
+
+        .help-text {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #888;
+        }
+
+        .help-text h3 {
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .help-text ul {
+            margin-left: 20px;
+        }
+
+        .help-text li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Anti-Doomscroll Settings</h1>
+            <p>Configure which sites to block and set your time limits</p>
+        </div>
+
+        <div class="content">
+            <!-- Site Configuration -->
+            <div class="section">
+                <h2>Blocked Sites</h2>
+                <p style="margin-bottom: 20px; color: #888; font-size: 14px;">
+                    Toggle sites on/off. Time limits are configured on your focus app.
+                </p>
+                <div id="sitesList"></div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-text">
+                <h3>How it works:</h3>
+                <ul>
+                    <li><strong>Toggle:</strong> Enable/disable blocking for each site</li>
+                    <li><strong>Time Limits:</strong> Configure daily/weekly limits on your focus app</li>
+                    <li><strong>Blocking:</strong> When limits are reached, you'll be redirected to your focus app</li>
+                    <li><strong>Reset:</strong> Limits reset automatically based on your app settings</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="buttons">
+                <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+                <button class="btn" id="resetSettings">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>

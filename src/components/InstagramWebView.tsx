@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -22,27 +23,27 @@ export function InstagramWebView({ isBlocked, className }: InstagramWebViewProps
 
   if (isBlocked) {
     return (
-      <Card className={cn("p-8 bg-card border-border shadow-lg", className)}>
-        <div className="text-center space-y-4 h-full flex flex-col justify-center items-center min-h-[400px]">
-          <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-foreground">Instagram Blocked</h2>
-          <p className="text-muted-foreground max-w-md">
+      <div className={cn("p-8 border border-gray-800 bg-gray-900", className)}>
+        <div className="text-center space-y-6 h-full flex flex-col justify-center items-center min-h-[400px]">
+          <div className="text-8xl mb-6 font-mono">■</div>
+          <h2 className="text-3xl font-thin tracking-wider text-white uppercase">Instagram Blocked</h2>
+          <p className="text-gray-400 max-w-md font-light">
             Your focus time has expired. Take a break and come back when you're ready to set a new timer!
           </p>
-          <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mt-6">
-            <p className="text-accent-foreground font-medium">
-              🧘‍♀️ Use this time to be mindful and present
+          <div className="border border-gray-700 bg-gray-800 p-6 mt-6">
+            <p className="text-gray-300 font-light tracking-wider uppercase">
+              Use this time to be mindful and present
             </p>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className={cn("p-0 bg-card border-border shadow-lg overflow-hidden", className)}>
-      <div className="bg-gradient-focus text-white p-3 text-center">
-        <p className="font-medium">📱 Instagram - Use mindfully</p>
+    <div className={cn("p-0 border border-gray-800 bg-gray-900 overflow-hidden", className)}>
+      <div className="bg-gray-800 text-white p-4 text-center border-b border-gray-700">
+        <p className="font-thin tracking-wider uppercase">Instagram - Use mindfully</p>
       </div>
       <div className="relative h-full min-h-[500px]">
         <iframe
@@ -53,8 +54,8 @@ export function InstagramWebView({ isBlocked, className }: InstagramWebViewProps
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
           loading="lazy"
         />
-        <div className="absolute inset-0 pointer-events-none border-2 border-primary/20 rounded-lg" />
+        <div className="absolute inset-0 pointer-events-none border-2 border-gray-600" />
       </div>
-    </Card>
+    </div>
   );
 }

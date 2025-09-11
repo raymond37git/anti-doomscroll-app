@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=instagram.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?instagram\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=tiktok.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?tiktok\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=twitter.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?twitter\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=x.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?x\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=youtube.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?youtube\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 6,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=facebook.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?facebook\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  },
+  {
+    "id": 7,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "regexSubstitution": "https://anti-doomscroll-app.vercel.app/?blocked=reddit.com&original=\\0"
+      }
+    },
+    "condition": {
+      "regexFilter": "https?://(www\\.)?reddit\\.com/.*",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]
+
