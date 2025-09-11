@@ -2,13 +2,10 @@
 
 // Default blocked sites configuration
 const DEFAULT_BLOCKED_SITES = {
-  'instagram.com': { enabled: true, dailyLimit: 60, weeklyLimit: 300 },
-  'tiktok.com': { enabled: true, dailyLimit: 30, weeklyLimit: 150 },
-  'twitter.com': { enabled: true, dailyLimit: 45, weeklyLimit: 200 },
-  'x.com': { enabled: true, dailyLimit: 45, weeklyLimit: 200 },
-  'youtube.com': { enabled: true, dailyLimit: 90, weeklyLimit: 400 },
-  'facebook.com': { enabled: true, dailyLimit: 30, weeklyLimit: 150 },
-  'reddit.com': { enabled: true, dailyLimit: 60, weeklyLimit: 300 }
+  'instagram.com': { enabled: true, icon: '■', name: 'Instagram' },
+  'tiktok.com': { enabled: true, icon: '●', name: 'TikTok' },
+  'twitter.com': { enabled: true, icon: '▲', name: 'Twitter' },
+  'youtube.com': { enabled: true, icon: '◆', name: 'YouTube' }
 };
 
 // Initialize extension with default settings
@@ -23,7 +20,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
   
   if (!result.appUrl) {
-    await chrome.storage.sync.set({ appUrl: 'http://localhost:8080/' });
+    await chrome.storage.sync.set({ appUrl: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
   }
   
   // Set up initial rules
@@ -38,16 +35,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     
     for (const [domain, config] of Object.entries(blockedSites)) {
       if (config.enabled && isBlockedSite(tab.url, domain)) {
-        if (await shouldBlockSite(domain)) {
-          const redirectUrl = `${appUrl}?blocked=${domain}&original=${encodeURIComponent(tab.url)}`;
-          
-          try {
-            await chrome.tabs.update(tabId, { url: redirectUrl });
-            console.log(`Redirected ${tab.url} to ${redirectUrl}`);
-          } catch (error) {
-            console.error('Error redirecting tab:', error);
-          }
+        const redirectUrl = `${appUrl}?blocked=${domain}&original=${encodeURIComponent(tab.url)}`;
+        
+        try {
+          await chrome.tabs.update(tabId, { url: redirectUrl });
+          console.log(`Redirected ${tab.url} to ${redirectUrl}`);
           break;
+        } catch (error) {
+          console.error('Error redirecting tab:', error);
         }
       }
     }
@@ -64,44 +59,6 @@ function isBlockedSite(url, domain) {
   }
 }
 
-// Helper function to check if site should be blocked based on time limits
-async function shouldBlockSite(domain) {
-  const blockedSites = await getBlockedSites();
-  const config = blockedSites[domain];
-  
-  if (!config || !config.enabled) return false;
-  
-  // Get usage data
-  const usage = await getUsageData(domain);
-  const now = new Date();
-  const today = now.toDateString();
-  const weekStart = new Date(now.setDate(now.getDate() - now.getDay())).toDateString();
-  
-  // Check daily limit
-  if (config.dailyLimit > 0) {
-    const dailyUsage = usage.daily[today] || 0;
-    if (dailyUsage >= config.dailyLimit) {
-      return true;
-    }
-  }
-  
-  // Check weekly limit
-  if (config.weeklyLimit > 0) {
-    const weeklyUsage = Object.values(usage.daily)
-      .filter((_, index) => {
-        const date = new Date(Object.keys(usage.daily)[index]);
-        return date >= new Date(weekStart);
-      })
-      .reduce((sum, time) => sum + time, 0);
-    
-    if (weeklyUsage >= config.weeklyLimit) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
 // Get blocked sites configuration
 async function getBlockedSites() {
   const result = await chrome.storage.sync.get(['blockedSites']);
@@ -111,28 +68,13 @@ async function getBlockedSites() {
 // Get app URL
 async function getAppUrl() {
   const result = await chrome.storage.sync.get(['appUrl']);
-  return result.appUrl || 'http://localhost:8080/';
-}
-
-// Get usage data for a domain
-async function getUsageData(domain) {
-  const result = await chrome.storage.local.get([`usage_${domain}`]);
-  return result[`usage_${domain}`] || { daily: {} };
-}
-
-// Update usage data when site is accessed
-async function updateUsageData(domain, timeSpent) {
-  const usage = await getUsageData(domain);
-  const today = new Date().toDateString();
-  
-  usage.daily[today] = (usage.daily[today] || 0) + timeSpent;
-  
-  await chrome.storage.local.set({ [`usage_${domain}`]: usage });
+  return result.appUrl || 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup';
 }
 
 // Update blocking rules for declarative net request
 async function updateBlockingRules() {
   const blockedSites = await getBlockedSites();
+  const appUrl = await getAppUrl();
   const rules = [];
   
   let ruleId = 1;
@@ -144,7 +86,7 @@ async function updateBlockingRules() {
         action: {
           type: "redirect",
           redirect: {
-            regexSubstitution: "http://localhost:8080/?blocked=" + domain + "&original=\\0"
+            regexSubstitution: `${appUrl}?blocked=${domain}&original=\\0`
           }
         },
         condition: {
@@ -161,6 +103,7 @@ async function updateBlockingRules() {
       removeRuleIds: Array.from({length: ruleId}, (_, i) => i + 1),
       addRules: rules
     });
+    console.log(`Updated ${rules.length} blocking rules`);
   } catch (error) {
     console.error('Error updating blocking rules:', error);
   }
@@ -175,8 +118,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'updateUsage') {
-    updateUsageData(request.domain, request.timeSpent);
+  if (request.action === 'updateRules') {
+    updateBlockingRules();
     sendResponse({ success: true });
   }
 });
@@ -185,7 +128,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     isBlockedSite,
-    shouldBlockSite,
     getBlockedSites,
     getAppUrl
   };

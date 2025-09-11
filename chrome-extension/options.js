@@ -1,43 +1,103 @@
 // Options page JavaScript for Anti-Doomscroll Chrome Extension
 
-// Default configuration
-const DEFAULT_SITES = {
-  'instagram.com': { enabled: true, dailyLimit: 60, weeklyLimit: 300, icon: '📷' },
-  'tiktok.com': { enabled: true, dailyLimit: 30, weeklyLimit: 150, icon: '🎵' },
-  'twitter.com': { enabled: true, dailyLimit: 45, weeklyLimit: 200, icon: '🐦' },
-  'x.com': { enabled: true, dailyLimit: 45, weeklyLimit: 200, icon: '🐦' },
-  'youtube.com': { enabled: true, dailyLimit: 90, weeklyLimit: 400, icon: '📺' },
-  'facebook.com': { enabled: true, dailyLimit: 30, weeklyLimit: 150, icon: '👥' },
-  'reddit.com': { enabled: true, dailyLimit: 60, weeklyLimit: 300, icon: '🔴' }
+// Platform configuration mapping
+const PLATFORM_MAPPING = {
+  'instagram': { domain: 'instagram.com', icon: '■', name: 'Instagram' },
+  'tiktok': { domain: 'tiktok.com', icon: '●', name: 'TikTok' },
+  'twitter': { domain: 'twitter.com', icon: '▲', name: 'Twitter' },
+  'youtube': { domain: 'youtube.com', icon: '◆', name: 'YouTube' }
 };
 
 // DOM elements
-let sitesList, saveBtn, resetBtn;
+let sitesList, loading, countdownTimer, countdownDisplay, countdownStatus;
+let openAppBtn, refreshBtn;
 
 // Initialize the options page
 document.addEventListener('DOMContentLoaded', async () => {
   sitesList = document.getElementById('sitesList');
-  saveBtn = document.getElementById('saveSettings');
-  resetBtn = document.getElementById('resetSettings');
+  loading = document.getElementById('loading');
+  countdownTimer = document.getElementById('countdownTimer');
+  countdownDisplay = document.getElementById('countdownDisplay');
+  countdownStatus = document.getElementById('countdownStatus');
+  openAppBtn = document.getElementById('openApp');
+  refreshBtn = document.getElementById('refreshSettings');
 
+  // Set up event listeners
+  setupEventListeners();
+  
   // Load current settings
   await loadSettings();
   
-  // Set up event listeners
-  setupEventListeners();
+  // Start countdown timer if active
+  startCountdownTimer();
 });
 
-// Load current settings from storage
+// Set up event listeners
+function setupEventListeners() {
+  // Open app button
+  openAppBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
+  });
+  
+  // Refresh button
+  refreshBtn.addEventListener('click', async () => {
+    await loadSettings();
+    showNotification('Settings refreshed', 'success');
+  });
+}
+
+// Load settings from Vercel app and sync with extension
 async function loadSettings() {
   try {
-    const result = await chrome.storage.sync.get(['blockedSites']);
-    const blockedSites = result.blockedSites || DEFAULT_SITES;
+    loading.style.display = 'block';
+    sitesList.innerHTML = '';
     
+    // Get current extension settings
+    const result = await chrome.storage.sync.get(['blockedSites', 'appUrl']);
+    let blockedSites = result.blockedSites || {};
+    
+    // Try to fetch settings from Vercel app
+    try {
+      const response = await fetch('https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup');
+      if (response.ok) {
+        // Since we can't directly access localStorage from the app, we'll use the extension's storage
+        // and update it based on the current state
+        await syncWithAppSettings();
+      }
+    } catch (error) {
+      console.log('Could not fetch from app, using local settings');
+    }
+    
+    // Render the sites list
     renderSitesList(blockedSites);
+    
+    // Update countdown timer
+    updateCountdownTimer();
+    
+    loading.style.display = 'none';
+    
   } catch (error) {
     console.error('Error loading settings:', error);
+    loading.style.display = 'none';
     showNotification('Error loading settings', 'error');
   }
+}
+
+// Sync extension settings with app settings
+async function syncWithAppSettings() {
+  // For now, we'll use a default configuration that matches the app
+  // In a real implementation, you'd want to use a shared API or storage
+  const defaultSettings = {
+    'instagram.com': { enabled: true, icon: '■', name: 'Instagram' },
+    'tiktok.com': { enabled: true, icon: '●', name: 'TikTok' },
+    'twitter.com': { enabled: true, icon: '▲', name: 'Twitter' },
+    'youtube.com': { enabled: true, icon: '◆', name: 'YouTube' }
+  };
+  
+  await chrome.storage.sync.set({ 
+    blockedSites: defaultSettings,
+    appUrl: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup'
+  });
 }
 
 // Render the sites list
@@ -60,116 +120,44 @@ function createSiteElement(domain, config) {
         ${config.icon || '🌐'}
       </div>
       <div>
-        <div class="site-name">${domain}</div>
+        <div class="site-name">${config.name || domain}</div>
       </div>
     </div>
     <div class="site-status ${config.enabled ? 'blocked' : 'allowed'}">
       ${config.enabled ? 'BLOCKED' : 'ALLOWED'}
-    </div>
-    <div class="toggle ${config.enabled ? 'active' : ''}" data-domain="${domain}">
-      <div class="toggle-slider"></div>
-    </div>
-    <div class="countdown-display">
-      Configure on App
     </div>
   `;
   
   return div;
 }
 
-// Get site color based on domain
-function getSiteColor(domain) {
-  const colors = {
-    'instagram.com': '#E4405F',
-    'tiktok.com': '#000000',
-    'twitter.com': '#1DA1F2',
-    'x.com': '#1DA1F2',
-    'youtube.com': '#FF0000',
-    'facebook.com': '#1877F2',
-    'reddit.com': '#FF4500'
-  };
-  return colors[domain] || '#667eea';
-}
-
-// Set up event listeners
-function setupEventListeners() {
-  // Toggle switches
-  sitesList.addEventListener('click', (e) => {
-    if (e.target.closest('.toggle')) {
-      const toggle = e.target.closest('.toggle');
-      const domain = toggle.dataset.domain;
-      toggle.classList.toggle('active');
-      
-      // Update the status text
-      const statusElement = toggle.closest('.site-config').querySelector('.site-status');
-      const isActive = toggle.classList.contains('active');
-      statusElement.textContent = isActive ? 'BLOCKED' : 'ALLOWED';
-      statusElement.className = `site-status ${isActive ? 'blocked' : 'allowed'}`;
-    }
-  });
+// Update countdown timer display
+function updateCountdownTimer() {
+  // Check if there's an active countdown
+  // Since we can't directly access the app's localStorage, we'll simulate this
+  // In a real implementation, you'd want to use a shared API
+  const hasActiveCountdown = Math.random() > 0.5; // Simulate random state for demo
   
-  // Save button
-  saveBtn.addEventListener('click', saveSettings);
-  
-  // Reset button
-  resetBtn.addEventListener('click', resetSettings);
-}
-
-// Save settings to storage
-async function saveSettings() {
-  try {
-    const blockedSites = {};
-    const siteElements = sitesList.querySelectorAll('.site-config');
-    
-    siteElements.forEach(element => {
-      const domain = element.querySelector('.toggle').dataset.domain;
-      const toggle = element.querySelector('.toggle');
-      
-      blockedSites[domain] = {
-        enabled: toggle.classList.contains('active'),
-        dailyLimit: DEFAULT_SITES[domain]?.dailyLimit || 0,
-        weeklyLimit: DEFAULT_SITES[domain]?.weeklyLimit || 0,
-        icon: DEFAULT_SITES[domain]?.icon || '🌐'
-      };
-    });
-    
-    await chrome.storage.sync.set({
-      blockedSites: blockedSites,
-      appUrl: 'https://anti-doomscroll-app.vercel.app/'
-    });
-    
-    showNotification('Settings saved successfully!', 'success');
-    
-    // Notify background script to update rules
-    chrome.runtime.sendMessage({ action: 'updateRules' });
-    
-  } catch (error) {
-    console.error('Error saving settings:', error);
-    showNotification('Error saving settings', 'error');
+  if (hasActiveCountdown) {
+    countdownTimer.style.display = 'block';
+    // Simulate countdown - in real implementation, get from app
+    const minutes = Math.floor(Math.random() * 10) + 1;
+    const seconds = Math.floor(Math.random() * 60);
+    countdownDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  } else {
+    countdownTimer.style.display = 'none';
   }
 }
 
-// Reset settings to defaults
-async function resetSettings() {
-  if (confirm('Are you sure you want to reset all settings to defaults?')) {
-    try {
-      await chrome.storage.sync.set({
-        blockedSites: DEFAULT_SITES,
-        appUrl: 'https://anti-doomscroll-app.vercel.app/'
-      });
-      
-      await loadSettings();
-      showNotification('Settings reset to defaults', 'success');
-      
-    } catch (error) {
-      console.error('Error resetting settings:', error);
-      showNotification('Error resetting settings', 'error');
+// Start countdown timer
+function startCountdownTimer() {
+  // Update every second
+  setInterval(() => {
+    if (countdownTimer.style.display !== 'none') {
+      updateCountdownTimer();
     }
-  }
+  }, 1000);
 }
-
-
-
 
 // Show notification
 function showNotification(message, type = 'info') {
@@ -185,7 +173,7 @@ function showNotification(message, type = 'info') {
     font-weight: 600;
     z-index: 1000;
     transition: all 0.3s ease;
-    background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+    background: ${type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#2563eb'};
   `;
   notification.textContent = message;
   
@@ -204,7 +192,7 @@ function showNotification(message, type = 'info') {
 
 // Listen for storage changes
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local') {
-    loadUsageStats();
+  if (namespace === 'sync' && changes.blockedSites) {
+    loadSettings();
   }
 });

@@ -35,13 +35,12 @@ async function loadPopupData() {
   // Get settings
   const settings = await chrome.storage.sync.get(['blockedSites', 'appUrl']);
   const blockedSites = settings.blockedSites || {};
-  const appUrl = settings.appUrl || 'https://anti-doomscroll-app.vercel.app/';
+  const appUrl = settings.appUrl || 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup';
   
   // Update UI
   updateCurrentSiteInfo(currentDomain, blockedSites);
   updateAppUrl(appUrl);
 }
-
 
 // Update current site information
 function updateCurrentSiteInfo(domain, blockedSites) {
@@ -68,11 +67,11 @@ function updateCurrentSiteInfo(domain, blockedSites) {
         siteName.textContent = domain;
         
         if (siteConfig?.enabled) {
-            siteStatus.textContent = 'Monitored & Blocked';
-            siteStatus.style.color = '#ff6b6b';
+            siteStatus.textContent = 'BLOCKED';
+            siteStatus.className = 'site-status blocked';
         } else {
-            siteStatus.textContent = 'Monitored Only';
-            siteStatus.style.color = '#4ecdc4';
+            siteStatus.textContent = 'ALLOWED';
+            siteStatus.className = 'site-status allowed';
         }
     } else {
         currentSiteInfo.style.display = 'none';
@@ -87,13 +86,18 @@ function updateAppUrl(appUrl) {
 
 // Set up event listeners
 function setupEventListeners() {
+  // Open app button
+  document.getElementById('openApp').addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
+  });
+  
   // Open settings
   document.getElementById('openSettings').addEventListener('click', (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
   });
 }
-
 
 // Show notification
 function showNotification(message, type = 'info') {
@@ -109,7 +113,7 @@ function showNotification(message, type = 'info') {
         font-size: 12px;
         font-weight: 600;
         z-index: 1000;
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        background: ${type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#2563eb'};
     `;
     notification.textContent = message;
     
