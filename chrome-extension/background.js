@@ -20,7 +20,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
   
   if (!result.appUrl) {
-    await chrome.storage.sync.set({ appUrl: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
+    await chrome.storage.sync.set({ appUrl: 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd' });
   }
   
   // Set up initial rules
@@ -68,7 +68,7 @@ async function getBlockedSites() {
 // Get app URL
 async function getAppUrl() {
   const result = await chrome.storage.sync.get(['appUrl']);
-  return result.appUrl || 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup';
+  return result.appUrl || 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd';
 }
 
 // Update blocking rules for declarative net request

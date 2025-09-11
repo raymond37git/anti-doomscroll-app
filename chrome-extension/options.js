@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
   // Open app button
   openAppBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
+    chrome.tabs.create({ url: 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd' });
   });
   
   // Refresh button
@@ -58,7 +58,7 @@ async function loadSettings() {
     
     // Try to fetch settings from Vercel app
     try {
-      const response = await fetch('https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup');
+      const response = await fetch('https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd');
       if (response.ok) {
         // Since we can't directly access localStorage from the app, we'll use the extension's storage
         // and update it based on the current state
@@ -96,7 +96,7 @@ async function syncWithAppSettings() {
   
   await chrome.storage.sync.set({ 
     blockedSites: defaultSettings,
-    appUrl: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup'
+    appUrl: 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd'
   });
 }
 

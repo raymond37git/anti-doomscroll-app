@@ -35,7 +35,7 @@ async function loadPopupData() {
   // Get settings
   const settings = await chrome.storage.sync.get(['blockedSites', 'appUrl']);
   const blockedSites = settings.blockedSites || {};
-  const appUrl = settings.appUrl || 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup';
+  const appUrl = settings.appUrl || 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd';
   
   // Update UI
   updateCurrentSiteInfo(currentDomain, blockedSites);
@@ -89,7 +89,7 @@ function setupEventListeners() {
   // Open app button
   document.getElementById('openApp').addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://anti-doomscroll-8kpg3rdel-raymond-yus-projects.vercel.app/setup' });
+    chrome.tabs.create({ url: 'https://anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd' });
   });
   
   // Open settings
