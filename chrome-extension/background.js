@@ -35,7 +35,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     
     for (const [domain, config] of Object.entries(blockedSites)) {
       if (config.enabled && isBlockedSite(tab.url, domain)) {
-        const redirectUrl = `${appUrl}?blocked=${domain}&original=${encodeURIComponent(tab.url)}`;
+        // Redirect blocked site to the extension options page
+        const redirectUrl = chrome.runtime.getURL(`options.html?blocked=${domain}&original=${encodeURIComponent(tab.url)}`);
         
         try {
           await chrome.tabs.update(tabId, { url: redirectUrl });

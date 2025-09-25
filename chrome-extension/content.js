@@ -8,9 +8,10 @@
     let startTime = Date.now();
     let isBlockedSite = false;
     let currentDomain = '';
+    const APP_HOST = 'anti-doomscroll-app-git-master-raymond-yus-projects.vercel.app';
     
     // Initialize content script
-    function init() {
+    async function init() {
         currentDomain = window.location.hostname;
         isBlockedSite = await checkIfBlockedSite(currentDomain);
         
@@ -21,6 +22,19 @@
         
         // Listen for page changes (SPA navigation)
         observePageChanges();
+
+        // If we are on the Focus App, sync its local state to chrome.storage.sync
+        if (currentDomain === APP_HOST) {
+            await syncFromAppLocalStorage();
+        }
+
+        // Listen to messages to trigger a sync on demand
+        chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
+            if (req.action === 'syncFromApp') {
+                syncFromAppLocalStorage().then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+                return true;
+            }
+        });
     }
     
     // Check if current site is blocked
@@ -41,6 +55,34 @@
         }
     }
     
+    // Read app's localStorage and persist to chrome.storage.sync
+    async function syncFromAppLocalStorage() {
+        try {
+            const blockedPlatformsRaw = window.localStorage.getItem('blockedPlatforms');
+            const countdownEndAt = window.localStorage.getItem('countdownEndAt');
+
+            // Map app platforms -> domains
+            let blockedSites = {};
+            if (blockedPlatformsRaw) {
+                const platforms = JSON.parse(blockedPlatformsRaw);
+                blockedSites = {
+                    'instagram.com': { enabled: !!platforms.instagram?.enabled, name: 'Instagram', icon: '■' },
+                    'tiktok.com': { enabled: !!platforms.tiktok?.enabled, name: 'TikTok', icon: '●' },
+                    'twitter.com': { enabled: !!platforms.twitter?.enabled, name: 'Twitter', icon: '▲' },
+                    'youtube.com': { enabled: !!platforms.youtube?.enabled, name: 'YouTube', icon: '◆' }
+                };
+            }
+
+            await chrome.storage.sync.set({
+                blockedSites,
+                countdownEndAt: countdownEndAt ? parseInt(countdownEndAt) : null,
+                appUrl: `https://${APP_HOST}?_vercel_share=sTImB28WprFJvKFMfrhaz4mAdR8UNqUd`
+            });
+        } catch (e) {
+            console.error('syncFromAppLocalStorage error', e);
+        }
+    }
+
     // Check if site should be blocked based on time limits
     async function shouldBlockSite(domain) {
         try {
