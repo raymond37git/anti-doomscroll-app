@@ -14,56 +14,63 @@ const Setup = () => {
   const [isActive, setIsActive] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [initialTime, setInitialTime] = useState(0);
+  const [countdownEndAt, setCountdownEndAt] = useState<number | null>(null);
   const [platforms, setPlatforms] = useState({
-    instagram: { enabled: true, name: 'Instagram', icon: '■' },
-    tiktok: { enabled: true, name: 'TikTok', icon: '●' },
-    twitter: { enabled: true, name: 'Twitter', icon: '▲' },
-    youtube: { enabled: true, name: 'YouTube', icon: '◆' },
+    instagram: { enabled: false, name: 'Instagram', icon: '■' },
+    tiktok: { enabled: false, name: 'TikTok', icon: '●' },
+    twitter: { enabled: false, name: 'Twitter', icon: '▲' },
+    youtube: { enabled: false, name: 'YouTube', icon: '◆' },
   });
 
   useEffect(() => {
-    // Check if countdown is active
-    const savedTime = localStorage.getItem('countdownTime');
-    const savedActive = localStorage.getItem('countdownActive');
+    // Load persisted settings
     const savedPlatforms = localStorage.getItem('blockedPlatforms');
-    
-    if (savedTime && savedActive === 'true') {
-      const time = parseInt(savedTime);
-      setTimeLeft(time);
-      setInitialTime(time);
-      setIsActive(true);
-      setIsLocked(true);
-    }
-    
     if (savedPlatforms) {
       setPlatforms(JSON.parse(savedPlatforms));
+    }
+
+    const savedEndAt = localStorage.getItem('countdownEndAt');
+    if (savedEndAt) {
+      const endAt = parseInt(savedEndAt);
+      const now = Date.now();
+      if (endAt > now) {
+        const remaining = Math.ceil((endAt - now) / 1000);
+        setCountdownEndAt(endAt);
+        setTimeLeft(remaining);
+        setInitialTime(remaining);
+        setIsActive(true);
+        setIsLocked(true);
+      } else {
+        // expired
+        localStorage.removeItem('countdownEndAt');
+        localStorage.setItem('settingsLocked', 'false');
+      }
     }
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((time) => {
-          const newTime = time - 1;
-          localStorage.setItem('countdownTime', newTime.toString());
-          
-          if (newTime <= 0) {
-            setIsActive(false);
-            setIsLocked(false);
-            localStorage.removeItem('countdownTime');
-            localStorage.removeItem('countdownActive');
-            localStorage.setItem('settingsLocked', 'false');
-          }
-          
-          return newTime;
-        });
-      }, 1000);
+    // Drive countdown from absolute end time so it stays accurate when tab is inactive or closed
+    let interval: NodeJS.Timeout | null = null;
+    if (isActive && countdownEndAt) {
+      const tick = () => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((countdownEndAt - now) / 1000));
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
+          setIsActive(false);
+          setIsLocked(false);
+          setCountdownEndAt(null);
+          localStorage.removeItem('countdownEndAt');
+          localStorage.setItem('settingsLocked', 'false');
+        }
+      };
+      tick();
+      interval = setInterval(tick, 1000);
     }
-
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, countdownEndAt]);
 
   const togglePlatform = (platformId: string) => {
     if (isLocked) return;
@@ -75,6 +82,18 @@ const Setup = () => {
         enabled: !prev[platformId as keyof typeof prev].enabled
       }
     }));
+    // Persist
+    setTimeout(() => {
+      // use latest state after setState queues
+      const next = {
+        ...platforms,
+        [platformId]: {
+          ...platforms[platformId as keyof typeof platforms],
+          enabled: !(platforms as any)[platformId].enabled,
+        },
+      } as typeof platforms;
+      localStorage.setItem('blockedPlatforms', JSON.stringify(next));
+    }, 0);
   };
 
   const adjustCountdown = (increment: boolean) => {
@@ -89,14 +108,15 @@ const Setup = () => {
   const handleStartBlocking = () => {
     if (isLocked) return;
     
-    // Save settings to localStorage
+    // Persist settings
     const totalSeconds = countdownMinutes * 60;
-    localStorage.setItem('countdownTime', totalSeconds.toString());
-    localStorage.setItem('countdownActive', 'true');
+    const endAt = Date.now() + totalSeconds * 1000;
+    localStorage.setItem('countdownEndAt', endAt.toString());
     localStorage.setItem('settingsLocked', 'true');
     localStorage.setItem('blockedPlatforms', JSON.stringify(platforms));
-    
+
     // Start countdown
+    setCountdownEndAt(endAt);
     setTimeLeft(totalSeconds);
     setInitialTime(totalSeconds);
     setIsActive(true);
@@ -107,8 +127,8 @@ const Setup = () => {
     setIsActive(false);
     setIsLocked(false);
     setTimeLeft(0);
-    localStorage.removeItem('countdownTime');
-    localStorage.removeItem('countdownActive');
+    setCountdownEndAt(null);
+    localStorage.removeItem('countdownEndAt');
     localStorage.setItem('settingsLocked', 'false');
   };
 
@@ -174,12 +194,17 @@ const Setup = () => {
                       <span className="text-2xl font-mono">{platform.icon}</span>
                       <span className="font-light tracking-wide">{platform.name}</span>
                     </div>
-                    <Switch
-                      checked={platform.enabled}
-                      onCheckedChange={() => togglePlatform(id)}
-                      disabled={isLocked}
-                      className="data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-300"
-                    />
+                    <div className="flex items-center space-x-3">
+                      <span className={`text-xs font-semibold ${platform.enabled ? 'text-red-600' : 'text-green-600'}`}>
+                        {platform.enabled ? 'BLOCKED' : 'ALLOWED'}
+                      </span>
+                      <Switch
+                        checked={platform.enabled}
+                        onCheckedChange={() => togglePlatform(id)}
+                        disabled={isLocked}
+                        className="data-[state=checked]:bg-white data-[state=unchecked]:bg-gray-300"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
